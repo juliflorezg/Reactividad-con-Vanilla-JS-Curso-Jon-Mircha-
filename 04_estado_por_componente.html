@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estado inmutable</title>
+</head>
+<body>
+  <h1>Estado inmutable</h1>
+  <form id="todo-form">
+    <input type="text" id="todo-item" placeholder="Tarea por hacer" autocomplete="off">
+    <input type="submit" value="Agregar">
+  </form>
+  <h2>Lista de tareas</h2>
+  <ul id="todo-list"></ul>
+
+
+
+  <script>
+    const d = document
+    
+      // El state global
+    const state = {
+      todoList: [],
+      nombre: ""
+    }
+
+    // Template UI
+    const template = () =>{
+      if(template.data.todoList.length < 1) {
+        return `<p><em>Lista sin tareas por hacer</em></p>`
+      }
+
+      let todos = template.data.todoList.map(item => `<li>${item}</li>`).join("")
+
+      // console.log(todos)
+      return todos
+    }
+
+    // Agregar State al template que genera el componente de UI (State Local)
+    template.data = {
+      todoList: []
+    }
+
+
+    // Render UI
+    const render = () => {
+      console.log("Estado global", state)
+      console.log("Estado local", template.data)
+
+      const $list = d.getElementById("todo-list")
+      if(!$list) return
+
+      $list.innerHTML = template()
+
+    }
+
+    // Actualizar el state de forma reactiva
+    // Está comparando las llaves del objeto con las de State, si el objeto tiene una llave que coincida con la llave del State, se va a reeplazar la llave del State por la del objeto
+    const setState = obj => {
+      for(let key in obj) {
+        if(template.data.hasOwnProperty(key)){
+          template.data[key] = obj[key]
+        }
+      }
+
+      render()
+    }
+
+    // Desvincular el estado original al pasarlo a texto y luego a objeto otra vez
+    const getState = () => JSON.parse(JSON.stringify(template.data))
+
+
+    d.addEventListener("DOMContentLoaded", render)
+
+    // Estableciendo valores por defecto al State
+    setState({
+      todoList: ["tarea 1", "tarea 2", "tarea 3"],
+    })
+
+
+    d.addEventListener("submit", e => {
+
+      if(!e.target.matches("#todo-form")) return false 
+
+      e.preventDefault()
+
+      const $item = d.getElementById("todo-item")
+      if(!$item) return
+
+      // Actualizar el State de forma reactiva
+      const lastState = getState()
+      lastState.todoList.push($item.value)
+      setState({todoList: lastState.todoList})
+
+      // state.todoList.push($item.value)
+      // render()
+
+      // Limpiar el input
+      $item.value = ""
+      $item.focus()
+    })
+
+  </script>
+</body>
+</html>
